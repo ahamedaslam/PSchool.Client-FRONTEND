@@ -1,0 +1,53 @@
+﻿@page "/parents"
+@using Pschool.Client.Model
+@inject HttpClient Http
+
+<h3>Parents</h3>
+
+@if (parents == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var parent in parents)
+            {
+                <tr>
+                    <td>@parent.Id</td>
+                    <td>@parent.FullName</td>
+                    <td>@parent.Email</td>
+                    <td>@parent.Phone</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteParent(parent.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ParentDTO>? parents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        parents = await Http.GetFromJsonAsync<List<ParentDTO>>("api/Parents/GetAll");
+    }
+
+    private async Task DeleteParent(int id)
+    {
+        await Http.DeleteAsync($"api/Parents/DeleteParent?id={id}");
+        parents = await Http.GetFromJsonAsync<List<ParentDTO>>("api/Parents/GetAll");
+    }
+}

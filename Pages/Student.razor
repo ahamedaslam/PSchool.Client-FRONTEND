@@ -1,0 +1,63 @@
+﻿@page "/students"
+@using Pschool.Client.Model
+@inject HttpClient Http
+
+<h3>Students</h3>
+
+@if (students == null || parents == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="mb-3">
+        <label>Select Parent to Filter:</label>
+        <select class="form-select w-25" @onchange="FilterByParent">
+            <option value="0">All Parents</option>
+            @foreach (var parent in parents)
+            {
+                <option value="@parent.Id">@parent.FullName</option>
+            }
+        </select>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Parent</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in students)
+            {
+                <tr>
+                    <td>@s.FullName</td>
+                    <td>@s.Age</td>
+                
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<StudentDTO>? students;
+    private List<ParentDTO>? parents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        parents = await Http.GetFromJsonAsync<List<ParentDTO>>("api/Parents/GetAll");
+        students = await Http.GetFromJsonAsync<List<StudentDTO>>("api/Students/GetAllStudents");
+    }
+
+    private async Task FilterByParent(ChangeEventArgs e)
+    {
+        int parentId = int.Parse(e.Value!.ToString()!);
+        if (parentId == 0)
+            students = await Http.GetFromJsonAsync<List<StudentDTO>>("api/Students/GetAllStudents");
+        else
+            students = await Http.GetFromJsonAsync<List<StudentDTO>>($"api/Students/GetByParentId?parentId={parentId}");
+    }
+}
