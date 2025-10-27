@@ -8,6 +8,6 @@
         public string? Phone { get; set; }
         public string? Address { get; set; }
         public string? Siblings { get; set; }
-        public int ParentId { get; set; }
+        public int ParentId { get; set; } 
     }
 }

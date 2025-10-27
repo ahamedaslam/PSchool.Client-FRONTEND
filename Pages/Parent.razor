@@ -1,8 +1,44 @@
 ﻿@page "/parents"
 @using Pschool.Client.Model
+@using System.Text.Json
+@using System.Text
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 
-<h3>Parents</h3>
+<h2 style="text-align:center; font-weight:bold; margin-top:10px;">
+    Manage Parents
+</h2>
+
+<div class="actions-bar">
+    <button class="add-btn" @onclick="ShowAddForm">Add Parent</button>
+</div>
+
+@if (showForm)
+{
+    <div class="form-card">
+        <h4>@(editingParent != null ? "Edit Parent" : "Add New Parent")</h4>
+
+        <div class="form-group">
+            <label>Full Name</label>
+            <input class="form-control" @bind="formModel.FullName" />
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input class="form-control" @bind="formModel.Email" />
+        </div>
+
+        <div class="form-group">
+            <label>Phone</label>
+            <input class="form-control" @bind="formModel.Phone" />
+        </div>
+
+        <div class="form-actions">
+            <button class="save-btn" @onclick="SaveParent">💾 Save</button>
+            <button class="cancel-btn" @onclick="CancelForm">❌ Cancel</button>
+        </div>
+    </div>
+}
 
 @if (parents == null)
 {
@@ -10,26 +46,47 @@
 }
 else
 {
-    <table class="table table-striped">
+    <table class="parent-table">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th></th>
+                <th>👨‍👩‍👧 Parent Name</th>
+                <th>📧 Email</th>
+                <th>📞 Phone</th>
+                <th>🎓 Students</th>
+                <th>⚙️ Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var parent in parents)
             {
                 <tr>
-                    <td>@parent.Id</td>
                     <td>@parent.FullName</td>
                     <td>@parent.Email</td>
                     <td>@parent.Phone</td>
                     <td>
-                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteParent(parent.Id)">Delete</button>
+                        @if (parent.Students != null && parent.Students.Any())
+                        {
+                            <details>
+                                <summary>@parent.Students.Count Student(s)</summary>
+                                <ul>
+                                    @foreach (var student in parent.Students)
+                                    {
+                                        <li>
+                                            <b>@student.FullName</b> (Age: @student.Age)<br />
+                                            📞 @student.Phone | 🏠 @student.Address
+                                        </li>
+                                    }
+                                </ul>
+                            </details>
+                        }
+                        else
+                        {
+                            <span style="color: gray;">No students linked</span>
+                        }
+                    </td>
+                    <td>
+                        <button class="edit-btn" @onclick="() => EditParent(parent)">✏️</button>
+                        <button class="delete-btn" @onclick="() => OpenDeletePopup(parent.Id, parent.FullName)">🗑️</button>
                     </td>
                 </tr>
             }
@@ -37,17 +94,141 @@ else
     </table>
 }
 
+<!-- ✅ Universal Popup Dialog -->
+@if (showDialog)
+{
+    <div class="confirm-overlay">
+        <div class="confirm-dialog @dialogType">
+            <h4>@dialogTitle</h4>
+            <p>@dialogMessage</p>
+            <div class="confirm-actions">
+                @if (onConfirmAction != null)
+                {
+                    <button class="confirm-btn delete" @onclick="ConfirmDialogAction">OK</button>
+                    <button class="confirm-btn cancel" @onclick="CloseDialog">Cancel</button>
+                }
+                else
+                {
+                    <button class="confirm-btn" @onclick="CloseDialog">OK</button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<ParentDTO>? parents;
+    private ParentDTO formModel = new();
+    private bool showForm = false;
+    private ParentDTO? editingParent;
+
+    // 🔹 Dialog state
+    private bool showDialog;
+    private string dialogTitle = "";
+    private string dialogMessage = "";
+    private string dialogType = "info";
+    private EventCallback? onConfirmAction;
+
+    private int selectedParentId;
+    private string? selectedParentName;
 
     protected override async Task OnInitializedAsync()
     {
-        parents = await Http.GetFromJsonAsync<List<ParentDTO>>("api/Parents/GetAll");
+        await LoadParents();
     }
 
-    private async Task DeleteParent(int id)
+    private async Task LoadParents()
     {
-        await Http.DeleteAsync($"api/Parents/DeleteParent?id={id}");
-        parents = await Http.GetFromJsonAsync<List<ParentDTO>>("api/Parents/GetAll");
+        var result = await Http.GetFromJsonAsync<ApiResponse<List<ParentDTO>>>("api/Parents/GetAll");
+        parents = result?.ResponseObject ?? new();
+    }
+
+    private void ShowAddForm()
+    {
+        showForm = true;
+        editingParent = null;
+        formModel = new();
+    }
+
+    private void EditParent(ParentDTO parent)
+    {
+        showForm = true;
+        editingParent = parent;
+        formModel = new ParentDTO
+        {
+            Id = parent.Id,
+            FullName = parent.FullName,
+            Email = parent.Email,
+            Phone = parent.Phone
+        };
+    }
+
+    private async Task SaveParent()
+    {
+        if (editingParent == null)
+            await Http.PostAsJsonAsync("api/Parents/CreateParent", formModel);
+        else
+            await Http.PutAsJsonAsync("api/Parents/UpdateParent", formModel);
+
+        await LoadParents();
+        showForm = false;
+
+        await ShowDialog("Success ✅", "Parent saved successfully!", "success");
+    }
+
+    private void CancelForm() => showForm = false;
+
+    // 🔹 Open confirmation dialog
+    private void OpenDeletePopup(int id, string name)
+    {
+        selectedParentId = id;
+        selectedParentName = name;
+        _ = ShowDialog("Delete Parent", $"Are you sure you want to delete {name}?", "warning",
+            EventCallback.Factory.Create(this, ConfirmDelete));
+    }
+
+    private async Task ConfirmDelete()
+    {
+        showDialog = false;
+
+        var payload = new { id = selectedParentId };
+        var request = new HttpRequestMessage(HttpMethod.Delete, "api/Parents/DeleteParent")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
+        };
+
+        var response = await Http.SendAsync(request);
+        if (response.IsSuccessStatusCode)
+        {
+            parents = parents?.Where(p => p.Id != selectedParentId).ToList();
+            await ShowDialog("Deleted 🗑️", $"{selectedParentName} has been removed.", "success");
+        }
+    }
+
+    // 🔹 Generic popup handling
+    private async Task ShowDialog(string title, string message, string type = "info", EventCallback? confirmAction = null)
+    {
+        dialogTitle = title;
+        dialogMessage = message;
+        dialogType = type;
+        onConfirmAction = confirmAction;
+        showDialog = true;
+    }
+
+    private async Task ConfirmDialogAction()
+    {
+        if (onConfirmAction.HasValue)
+            await onConfirmAction.Value.InvokeAsync(null);
+        showDialog = false;
+    }
+
+    private void CloseDialog() => showDialog = false;
+
+    public class ApiResponse<T>
+    {
+        public string? UniqueID { get; set; }
+        public string? ResponseCode { get; set; }
+        public string? ResponseDescription { get; set; }
+        public T? ResponseObject { get; set; }
     }
 }
