@@ -7,9 +7,9 @@
 }
 
 
-/* =============================== */
+
 /* TABLE STYLING */
-/* =============================== */
+
 
 table th,
 table td {
@@ -66,9 +66,9 @@ table td {
         border-bottom-right-radius: 12px;
     }
 
-/* =============================== */
+
 /* STUDENT SECTION */
-/* =============================== */
+
 .student-section summary {
     cursor: pointer;
     color: #007bff;
@@ -100,9 +100,9 @@ table td {
     text-align: center;
 }
 
-/* =============================== */
+
 /*  BUTTONS — TRANSPARENT STYLE */
-/* =============================== */
+
 .add-btn, .save-btn, .cancel-btn, .edit-btn, .delete-btn {
     border: 1px solid rgba(0, 0, 0, 0.15);
     background: transparent;
@@ -152,9 +152,9 @@ table td {
     margin-bottom: 1rem;
 }
 
-/* =============================== */
+
 /*  FORM CARD */
-/* =============================== */
+
 .form-card {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(10px);
@@ -205,9 +205,7 @@ table td {
         outline: none;
     }
 
-/* =============================== */
-/* 🧭 NAVIGATION MENU */
-/* =============================== */
+/* NAVIGATION MENU */
 .nav-center {
     display: block;
     text-align: center;
@@ -247,9 +245,8 @@ table td {
         color: #ffcc00;
     }
 
-/* =============================== */
-/* 📐 LAYOUT STRUCTURE */
-/* =============================== */
+
+/*  LAYOUT STRUCTURE */
 .layout {
     display: flex;
     height: 100vh;
@@ -309,12 +306,9 @@ table td {
 }
 
 
-/* Delete popup*/
 
 
-/* =============================== */
 /*  DELETE POPUP — MATCH TRANSPARENT BUTTON STYLE */
-/* =============================== */
 
 .confirm-overlay {
     position: fixed;
@@ -431,13 +425,12 @@ table td {
     letter-spacing: 1px;
 }
 
-    /* Hover state for nicer UX */
+
     .app-title:hover {
         color: #66c2ff;
         text-decoration: none;
     }
 
-    /* Remove the blue underline from active NavLink */
     .app-title.active {
         text-decoration: none !important;
         border: none !important;

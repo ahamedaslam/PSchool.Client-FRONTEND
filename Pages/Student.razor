@@ -4,6 +4,7 @@
 @using System.Text
 @using Pschool.Client.Response
 @inject HttpClient Http
+@inject IJSRuntime JSRuntime
 
 <h2 style="text-align:center; font-weight:bold; margin-top:10px;">
     Manage Students
@@ -77,12 +78,11 @@ else
     <table class="parent-table">
         <thead>
             <tr>
-@*                 <th>Id</th>
- *@                <th>👨‍🎓 Name</th>
+@*                
+ *@             <th>👨‍🎓 Name</th>
                 <th>🎂 Age</th>
                 <th>📞 Phone</th>
                 <th>🏠 Address</th>
-                @* <th>👨‍👩‍👧 Parents</th> *@
                 <th>⚙️ Actions</th>
             </tr>
         </thead>
@@ -90,13 +90,12 @@ else
             @foreach (var student in filteredStudents)
             {
                 <tr>
-@*                     <td>@student.Id</td>
+@*                     
  *@
                     <td>@student.FullName</td>
                     <td>@student.Age</td>
                     <td>@student.Phone</td>
                     <td>@student.Address</td>
-                   @* <td>@student.ParentName</td> *@
 
                   <td>
                         <button class="edit-btn" @onclick="() => EditStudent(student)">✏️</button>
@@ -108,7 +107,7 @@ else
     </table>
 }
 
-<!-- ✅ Reusable Popup -->
+<!-- Reusable Popup -->
 @if (showDialog)
 {
     <div class="confirm-overlay">
@@ -203,7 +202,7 @@ else
         };
     }
 
-    private void EditStudent(StudentDTO student)
+    private async  Task EditStudent(StudentDTO student)
     {
         showForm = true;
         editingStudent = student;
@@ -216,21 +215,39 @@ else
             Address = student.Address,
             ParentId = student.ParentId
         };
-        Console.WriteLine($"Editing Student ID: {formModel.Id}");
+        await JSRuntime.InvokeVoidAsync("scrollToTop");
+        await JSRuntime.InvokeVoidAsync("focusFirstInput");
+
 
     }
 
     private async Task SaveStudent()
     {
-        if (editingStudent == null)
-            await Http.PostAsJsonAsync("api/Students/CreateStudents", formModel);
-        else
-            await Http.PutAsJsonAsync("api/Students/UpdateStudent", formModel);
+        HttpResponseMessage response;
 
-        await LoadStudents();
-        showForm = false;
-        await ShowDialog("Success", "Student saved successfully!", "success");
+
+        if (editingStudent == null)
+            response = await Http.PostAsJsonAsync("api/Students/CreateStudents", formModel);
+        else
+            response = await Http.PutAsJsonAsync("api/Students/UpdateStudent", formModel);
+
+        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<StudentDTO>>();
+
+        if (response.IsSuccessStatusCode)
+        {
+
+            await LoadStudents();
+            showForm = false;
+
+            await ShowDialog("Success", apiResponse?.ResponseDescription ?? "Student saved successfully.", "success");
+        }
+        else
+        {
+            var errorMessage = apiResponse?.ResponseDescription ?? "An unexpected error occurred while saving parent.";
+            await ShowDialog("Error", errorMessage, "error");
+        }
     }
+
 
     private void CancelForm() => showForm = false;
 

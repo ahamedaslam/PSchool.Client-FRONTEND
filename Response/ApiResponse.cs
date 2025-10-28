@@ -3,7 +3,7 @@
     public class ApiResponse<T>
     {
         public string? UniqueID { get; set; }
-        public string? ResponseCode { get; set; }
+        public int? ResponseCode { get; set; }
         public string? ResponseDescription { get; set; }
         public T? ResponseObject { get; set; }
     }

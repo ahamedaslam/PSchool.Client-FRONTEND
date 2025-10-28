@@ -95,7 +95,7 @@ else
     </table>
 }
 
-<!-- ✅ Universal Popup Dialog -->
+<!--  Popup Dialog -->
 @if (showDialog)
 {
     <div class="confirm-overlay">
@@ -123,7 +123,7 @@ else
     private bool showForm = false;
     private ParentDTO? editingParent;
 
-    // 🔹 Dialog state
+    // Dialog state
     private bool showDialog;
     private string dialogTitle = "";
     private string dialogMessage = "";
@@ -151,7 +151,7 @@ else
         formModel = new();
     }
 
-    private void EditParent(ParentDTO parent)
+    private async Task EditParent(ParentDTO parent)
     {
         showForm = true;
         editingParent = parent;
@@ -162,24 +162,41 @@ else
             Email = parent.Email,
             Phone = parent.Phone
         };
-    }
+        await JSRuntime.InvokeVoidAsync("scrollToTop");
+        await JSRuntime.InvokeVoidAsync("focusFirstInput");
 
+    }
     private async Task SaveParent()
     {
+        HttpResponseMessage response;
+
         if (editingParent == null)
-            await Http.PostAsJsonAsync("api/Parents/CreateParent", formModel);
+            response = await Http.PostAsJsonAsync("api/Parents/CreateParent", formModel);
         else
-            await Http.PutAsJsonAsync("api/Parents/UpdateParent", formModel);
+            response = await Http.PutAsJsonAsync("api/Parents/UpdateParent", formModel);
 
-        await LoadParents();
-        showForm = false;
+        var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<ParentDTO>>();
 
-        await ShowDialog("Success", "Parent saved successfully!", "success");
+        if (response.IsSuccessStatusCode)
+        {
+
+            await LoadParents();
+            showForm = false;
+
+            await ShowDialog("Success", apiResponse?.ResponseDescription ?? "Parent saved successfully.", "success");
+        }
+        else
+        {
+            var errorMessage = apiResponse?.ResponseDescription ?? "An unexpected error occurred while saving parent.";
+            await ShowDialog("Error", errorMessage, "error");
+        }
+
     }
+
 
     private void CancelForm() => showForm = false;
 
-    // 🔹 Open confirmation dialog
+    // Open confirmation dialog
     private void OpenDeletePopup(int id, string name)
     {
         selectedParentId = id;
@@ -206,7 +223,7 @@ else
         }
     }
 
-    // 🔹 Generic popup handling
+    // Generic popup handling
     private async Task ShowDialog(string title, string message, string type = "info", EventCallback? confirmAction = null)
     {
         dialogTitle = title;

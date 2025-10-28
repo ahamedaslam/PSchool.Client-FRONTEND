@@ -2,7 +2,7 @@
 {
     public class AddStudentDTO
     {
-    public string FullName { get; set; } = string.Empty; //avoids null and compiler warnings
+    public string FullName { get; set; } = string.Empty; 
     public int? Age { get; set; }
     public string? Phone { get; set; }
     public string? Address { get; set; }
