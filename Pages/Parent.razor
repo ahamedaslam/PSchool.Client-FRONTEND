@@ -2,6 +2,7 @@
 @using Pschool.Client.Model
 @using System.Text.Json
 @using System.Text
+@using Pschool.Client.Response
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 
@@ -173,7 +174,7 @@ else
         await LoadParents();
         showForm = false;
 
-        await ShowDialog("Success ✅", "Parent saved successfully!", "success");
+        await ShowDialog("Success", "Parent saved successfully!", "success");
     }
 
     private void CancelForm() => showForm = false;
@@ -201,7 +202,7 @@ else
         if (response.IsSuccessStatusCode)
         {
             parents = parents?.Where(p => p.Id != selectedParentId).ToList();
-            await ShowDialog("Deleted 🗑️", $"{selectedParentName} has been removed.", "success");
+            await ShowDialog("Deleted", $"{selectedParentName} has been removed.", "success");
         }
     }
 
@@ -224,11 +225,5 @@ else
 
     private void CloseDialog() => showDialog = false;
 
-    public class ApiResponse<T>
-    {
-        public string? UniqueID { get; set; }
-        public string? ResponseCode { get; set; }
-        public string? ResponseDescription { get; set; }
-        public T? ResponseObject { get; set; }
-    }
+  
 }

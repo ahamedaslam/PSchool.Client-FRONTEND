@@ -1,7 +1,47 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<div class="dashboard-container">
+    <div class="welcome-card">
+        <h1 class="app-title">Pschool Management System</h1>
+        <p class="app-subtitle">A streamlined solution for managing parents and students efficiently.</p>
 
-<h1>Hello, world!</h1>
+        <div class="divider"></div>
 
-Welcome to your new app.
+        <section class="overview-section">
+            <h3>Project Overview</h3>
+            <p>
+                Pschool is a lightweight school management system developed using
+                <strong>ASP.NET Core Web API</strong> for backend services and
+                <strong>Blazor WebAssembly</strong> for the frontend.
+            </p>
+            <p>
+                The system enables administrators to easily manage student and parent information,
+                maintain relationships between them, and ensure smooth data handling with an intuitive interface.
+            </p>
+        </section>
+
+        <section class="features-section">
+            <h3>Core Features</h3>
+            <ul>
+                <li>View, create, and update parent and student records</li>
+                <li>Associate students with respective parents</li>
+                <li>Search and filter records dynamically</li>
+                <li>Clean, responsive, and user-friendly design</li>
+                <li>Backed by Entity Framework Core and SQL Server</li>
+            </ul>
+        </section>
+
+        <section class="navigation-section">
+            <h3>Get Started</h3>
+            <p>Use the sidebar to navigate:</p>
+            <ul>
+                <li><b>Parents</b> — Manage parent profiles and details</li>
+                <li><b>Students</b> — Manage student information and assignments</li>
+            </ul>
+        </section>
+
+        <footer class="footer">
+            <p>© @DateTime.Now.Year Pschool Management System. All rights reserved.</p>
+        </footer>
+    </div>
+</div>

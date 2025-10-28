@@ -6,9 +6,18 @@
     font-family: "Segoe UI", Arial, sans-serif;
 }
 
+
 /* =============================== */
 /* TABLE STYLING */
 /* =============================== */
+
+table th,
+table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+
 .parent-table {
     width: 100%;
     border-collapse: collapse;
@@ -151,6 +160,7 @@
     backdrop-filter: blur(10px);
     border-radius: 12px;
     padding: 1.5rem 2rem;
+
     margin-bottom: 1.5rem;
     color: #222;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
@@ -162,6 +172,9 @@
         transform: translateY(-2px);
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
     }
+
+
+
 
 /* Inputs */
 .form-group {
@@ -384,3 +397,121 @@
     .confirm-btn:hover {
         opacity: 0.85;
     }
+
+
+
+/*    HOME PAGE*/
+
+.dashboard-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.welcome-card {
+    max-width: 800px;
+    width: 100%;
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Removes underline and default link behavior */
+.app-title {
+    display: block;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #3fa9f5;
+    text-decoration: none;
+    text-align: center;
+    margin: 20px 0;
+    letter-spacing: 1px;
+}
+
+    /* Hover state for nicer UX */
+    .app-title:hover {
+        color: #66c2ff;
+        text-decoration: none;
+    }
+
+    /* Remove the blue underline from active NavLink */
+    .app-title.active {
+        text-decoration: none !important;
+        border: none !important;
+    }
+
+
+.app-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.05rem;
+}
+
+.divider {
+    height: 2px;
+    width: 100%;
+    background: #e5e5e5;
+    margin: 20px 0;
+}
+
+h3 {
+    color: #0078ff;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+p {
+    margin-bottom: 15px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+li {
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+    li:last-child {
+        border-bottom: none;
+    }
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    .welcome-card {
+        background: #1f1f1f;
+        color: #e5e5e5;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .app-title {
+        color: #3fa9f5;
+    }
+
+    .divider {
+        background: #333;
+    }
+
+    li {
+        border-bottom: 1px solid #333;
+    }
+
+    .footer {
+        color: #777;
+    }
+}
+
+

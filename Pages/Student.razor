@@ -2,13 +2,14 @@
 @using Pschool.Client.Model
 @using System.Text.Json
 @using System.Text
+@using Pschool.Client.Response
 @inject HttpClient Http
 
 <h2 style="text-align:center; font-weight:bold; margin-top:10px;">
     Manage Students
 </h2>
 
-<!-- 🔍 Parent Filter -->
+<!--  Parent Filter -->
 <div class="actions-bar">
     <select class="form-control" style="width: 250px;" @onchange="OnParentFilterChanged">
         <option value="">-- All Parents --</option>
@@ -76,11 +77,12 @@ else
     <table class="parent-table">
         <thead>
             <tr>
-                <th>👨‍🎓 Name</th>
+@*                 <th>Id</th>
+ *@                <th>👨‍🎓 Name</th>
                 <th>🎂 Age</th>
                 <th>📞 Phone</th>
                 <th>🏠 Address</th>
-             
+                @* <th>👨‍👩‍👧 Parents</th> *@
                 <th>⚙️ Actions</th>
             </tr>
         </thead>
@@ -88,10 +90,14 @@ else
             @foreach (var student in filteredStudents)
             {
                 <tr>
+@*                     <td>@student.Id</td>
+ *@
                     <td>@student.FullName</td>
                     <td>@student.Age</td>
                     <td>@student.Phone</td>
                     <td>@student.Address</td>
+                   @* <td>@student.ParentName</td> *@
+
                   <td>
                         <button class="edit-btn" @onclick="() => EditStudent(student)">✏️</button>
                         <button class="delete-btn" @onclick="() => OpenDeletePopup(student.Id, student.FullName)">🗑️</button>
@@ -138,7 +144,6 @@ else
     private string dialogMessage = "";
     private string dialogType = "info";
     private EventCallback? onConfirmAction;
-
     private int selectedStudentId;
     private string? selectedStudentName;
     private int? selectedParentFilterId;
@@ -186,6 +191,16 @@ else
         showForm = true;
         editingStudent = null;
         formModel = new();
+
+        //ADD
+        formModel = new StudentDTO
+        {
+            FullName = string.Empty,
+            Age = null,
+            Phone = string.Empty,
+            Address = string.Empty,
+            ParentId = null
+        };
     }
 
     private void EditStudent(StudentDTO student)
@@ -201,6 +216,8 @@ else
             Address = student.Address,
             ParentId = student.ParentId
         };
+        Console.WriteLine($"Editing Student ID: {formModel.Id}");
+
     }
 
     private async Task SaveStudent()
@@ -212,12 +229,12 @@ else
 
         await LoadStudents();
         showForm = false;
-        await ShowDialog("Success ✅", "Student saved successfully!", "success");
+        await ShowDialog("Success", "Student saved successfully!", "success");
     }
 
     private void CancelForm() => showForm = false;
 
-    // Delete logic
+    // Delete 
     private void OpenDeletePopup(int id, string name)
     {
         selectedStudentId = id;
@@ -230,20 +247,18 @@ else
     {
         showDialog = false;
 
-        var payload = new { id = selectedStudentId };
-        var request = new HttpRequestMessage(HttpMethod.Delete, "api/Students/DeleteStudent")
-        {
-            Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
-        };
+        // var payload = new { id = selectedStudentId };
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"api/Students/DeleteStudent/{selectedStudentId}");
 
-        var response = await Http.SendAsync(request);
+
+         var response = await Http.SendAsync(request);
         if (response.IsSuccessStatusCode)
         {
             students = students?.Where(s => s.Id != selectedStudentId).ToList();
             FilterStudents();
-            await ShowDialog("Deleted 🗑️", $"{selectedStudentName} has been removed.", "success");
+            await ShowDialog("Deleted", $"{selectedStudentName} has been removed.", "success");
         }
-    }
+    }       
 
     // Popup control
     private async Task ShowDialog(string title, string message, string type = "info", EventCallback? confirmAction = null)
@@ -264,29 +279,7 @@ else
 
     private void CloseDialog() => showDialog = false;
 
-    // DTOs
-    public class ApiResponse<T>
-    {
-        public string? UniqueID { get; set; }
-        public string? ResponseCode { get; set; }
-        public string? ResponseDescription { get; set; }
-        public T? ResponseObject { get; set; }
-    }
 
-    public class StudentDTO
-    {
-        public int Id { get; set; }
-        public string? FullName { get; set; }
-        public int Age { get; set; }
-        public string? Phone { get; set; }
-        public string? Address { get; set; }
-        public int ParentId { get; set; }
-        public string? ParentName { get; set; }
-    }
+ 
 
-    public class ParentDTO
-    {
-        public int Id { get; set; }
-        public string? FullName { get; set; }
-    }
 }
